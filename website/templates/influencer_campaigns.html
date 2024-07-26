@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaigns{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+                 <div class="container-fluid">
+                     <!-- Toggle button -->
+                     <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                         <i class="fas fa-bars"></i>
+                     </button>
+                     <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                         <ul class="nav-links">
+                             <li><a href="{{ url_for('views.influencer_dashboard') }}">Dashboard</a></li>
+                             <li class="center"><a href="{{ url_for('views.influencer_profile') }}">Profile</a></li>
+                             <li class="upward"><a href="{{ url_for('views.influencer_campaigns') }}">Campaigns</a></li>
+                             <li class="forward"><a href="#">Stats</a></li>
+                         </ul>
+                     </div>
+                 </div>
+             </nav>
+        </div>
+
+        <div class="container mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1>Active Campaigns</h1>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href="{{ url_for('views.search_campaigns') }}"><button type="submit" class="grey-btn">Search new Campaigns</button></a>
+                </div>
+            </div>
+            <hr>
+            <br>
+            {% if influencer.ad_requests %}
+            <div class="row row-cols-1 row-cols-md-4 g-3">
+                {% for adrequest in influencer.ad_requests %}
+                    <div class="col">
+                        <div class="card text-white bg-dark mb-3" >
+                            <div class="card-header">{{ adrequest.campaign.name }}</div>
+                            <div class="card-body">
+                            <h5 class="card-title">{{ adrequest.requirements }}</h5>
+                            <p class="card-text"><strong>Amount: </strong>{{ adrequest.payment_amount }}</p>
+                            <p class="card-text"><strong>End date: </strong>{{ adrequest.campaign.end_date }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+            </div>
+            <hr>
+            {% else %} 
+                <h5><em>No active campaigns</em></h5>
+            {% endif %}
+            
+
+            {% if new_nego or sent_requests or sponsor_nego or influencer_nego %}
+                <div class="row mt-5">
+                    <div class="col">
+                        <h1>Pending Requests</h1>
+                    </div>
+                </div>
+                <hr>
+                <br>
+                <div class="row row-cols-1 row-cols-md-4 g-3">
+                    {% for nego in new_nego %}
+                        <div class="col">
+                            <div class="card text-white bg-dark mb-3" >
+                                {% if nego.previous_time is none or(nego.latest_time>nego.previous_time) %}
+                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+                                {% endif %}
+                                <div class="card-header">{{ nego.ad_request.campaign.name }}</div>
+                                <div class="card-body">
+                                <h5 class="card-title">{{ nego.ad_request.requirements }}</h5>
+                                <p class="card-text"><strong>Amount: </strong>{{ nego.ad_request.payment_amount }}</p>
+                                <p class="card-text"><strong>End date: </strong>{{ nego.ad_request.campaign.end_date }}</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <form action="{{ url_for('views.influencer_negotiate',nego_id=nego.id) }}" method="post">
+                                        <div class="mb-3">
+                                            <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+                                            <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#negotiateInput">Negotiate</button>
+                                            <button type="submit" name="action" class="btn btn-danger" value="reject">Reject</button>
+                                        </div>
+                                        <div class="collapse" id="negotiateInput">
+                                            <div class="mb-3">
+                                                <label for="negotiation" class="form-label">Enter amount:</label>
+                                                <input type="number" class="form-control" id="negotiation" name="negotiation">
+                                            </div>
+                                            <button type="submit" name="action" value="negotiate" class="btn btn-primary">Send</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    {% for nego in sent_requests %}
+                        <div class="col">
+                            <div class="card text-white bg-dark mb-3" >
+                                <div class="card-header">{{ nego.ad_request.campaign.name }}</div>
+                                <div class="card-body">
+                                <h5 class="card-title">{{ nego.ad_request.requirements }}</h5>
+                                <p class="card-text"><strong>Amount: </strong>{{ nego.proposed_amount }}</p>
+                                <p class="card-text"><strong>End date: </strong>{{ nego.ad_request.campaign.end_date }}</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    REQUEST SENT !
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {% for nego in influencer_nego %}
+                        <div class="col">
+                            <div class="card text-white bg-dark mb-3" >
+                                <div class="card-header">{{ nego.ad_request.campaign.name }}</div>
+                                <div class="card-body">
+                                <h5 class="card-title">{{ nego.ad_request.requirements }}</h5>
+                                <p class="card-text"><strong>Original Amount: </strong>{{ nego.ad_request.payment_amount }}</p>
+                                <p class="card-text"><strong>Proposed Amount: </strong>{{ nego.proposed_amount }}</p>
+                                <p class="card-text"><strong>End date: </strong>{{ nego.ad_request.campaign.end_date }}</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    RE NEGOTIATED !!
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {% for nego in sponsor_nego %}
+                        <div class="col">
+                            <div class="card text-white bg-dark mb-3" >
+                                <div class="card-header">{{ nego.ad_request.campaign.name }}</div>
+                                <div class="card-body">
+                                <h5 class="card-title">{{ nego.ad_request.requirements }}</h5>
+                                <p class="card-text"><strong>Original Amount: </strong>{{ nego.ad_request.payment_amount }}</p>
+                                <p class="card-text"><strong>Proposed Amount: </strong>{{ nego.proposed_amount }}</p>
+                                <p class="card-text"><strong>End date: </strong>{{ nego.ad_request.campaign.end_date }}</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <form action="{{ url_for('views.influencer_negotiate',nego_id=nego.id) }}" method="post">
+                                        <div class="mb-3">
+                                            <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+                                            <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#negotiateInput">Negotiate</button>
+                                            <button type="submit" name="action" class="btn btn-danger" value="reject">Reject</button>
+                                        </div>
+                                        <div class="collapse" id="negotiateInput">
+                                            <div class="mb-3">
+                                                <label for="negotiation" class="form-label">Enter amount:</label>
+                                                <input type="number" class="form-control" id="negotiation" name="negotiation">
+                                            </div>
+                                            <button type="submit" name="action" value="negotiate" class="btn btn-primary">Send</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}

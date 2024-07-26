@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+                <div class="container-fluid">
+                    <!-- Toggle button -->
+                    <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                        <ul class="nav-links">
+                            <li><a href="{{ url_for('views.sponsor_dashboard') }}">Dashboard</a></li>
+                            <li class="center"><a href="{{ url_for('views.sponsor_profile') }}">Profile</a></li>
+                            <li class="upward"><a href="{{ url_for('views.sponsor_campaigns') }}">Campaigns</a></li>
+                            <li class="forward"><a href="#">Stats</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    
+        <div class="container mt-3">
+            <h1>Your Profile</h1>
+            <br>
+            <form action="{{ url_for('views.sponsor_profile') }}" method="post">
+                <div data-mdb-input-init class="form-outline">
+                    <input type="text" class="form-control form-control-lg" value="{{ sponsor.name }}"  placeholder="{{ sponsor.name }}" id="name" name="name">
+                    <label class="form-label" for="name">Company/Individual name:</label>
+                </div>
+                <div data-mdb-input-init class="form-outline">
+                    <input type="email" id="email" name="email" placeholder="{{ current_user.email }}" value="{{ current_user.email }}" class="form-control form-control-lg" disabled>
+                    <label class="form-label" for="email">Email</label>
+                </div>
+                <div data-mdb-input-init class="form-outline">
+                    <input type="text" name="industry" placeholder="{{ sponsor.industry }}" value="{{ sponsor.industry }}" class="form-control form-control-lg" id="industry" />
+                    <label for="industry" class="form-label">Industry</label>
+                </div>
+                <div data-mdb-input-init class="form-outline">
+                    <input type="number" name="budget" placeholder="{{ sponsor.budget }}" class="form-control form-control-lg" id="budget" />
+                    <label for="budget" class="form-label">Budget</label>
+                </div>
+                <br>
+                <p>To change password(Leave empty for no change)</p>
+                <div class="row">
+                <div class="col-md-6 mb-4 d-flex align-items-center">
+                <div data-mdb-input-init class="form-outline">
+                    <input type="password" name="current_password"  placeholder="Current Password" class="form-control form-control-lg" id="budget" />
+                </div>
+                </div>
+                <div class="col-md-6 mb-4 d-flex align-items-center">
+                <div data-mdb-input-init class="form-outline">
+                    <input type="text" name="new_password"  placeholder="New Password" class="form-control form-control-lg" id="budget" />
+                </div>
+                </div>
+                </div>
+
+                <button type="submit" class="grey-btn">Update</button>
+              </form>
+        </div>
+    </div>
+{% endblock %}

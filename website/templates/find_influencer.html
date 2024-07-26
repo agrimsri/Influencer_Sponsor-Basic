@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+       <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+            <div class="container-fluid">
+                <!-- Toggle button -->
+                <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('views.sponsor_dashboard') }}">Dashboard</a></li>
+                        <li class="center"><a href="{{ url_for('views.sponsor_profile') }}">Profile</a></li>
+                        <li class="upward"><a href="{{ url_for('views.sponsor_campaigns') }}">Campaigns</a></li>
+                        <li class="forward"><a href="#">Stats</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-3">
+                <h1>Find Influencer</h1>
+            </div>
+
+            <div class="col-md-9 align-item-right">
+                  <form class="row gx-3 gy-2 text-right"  action="{{ url_for('views.find_influencer',adrequest_id=adrequest_id) }}" method="post">
+                    <div class="col-sm-3">
+                        <label class="visually-hidden" for="specificSizeInputName">Name</label>
+                        <input type="text" name="name" class="form-control" id="specificSizeInputName" placeholder="Name">
+                    </div>
+                    <div class="col-sm-3">
+                        <label class="visually-hidden" for="specificSizeInputGroupReach">Reach</label>
+                        <input type="text" class="form-control" id="specificSizeInputGroupReach" placeholder="Reach Eg. 50-100" name="reach" pattern="^\d+-\d+$" title="Enter range in the format 50-100">
+                    </div>
+                    <div class="col-sm-3">
+                        <label class="visually-hidden" for="specificSizeSelect">Niche</label>
+                        <select class="form-select" id="specificSizeSelect" name="niche">
+                            <option value="" disabled selected>Niche</option>
+                            {% for influencer in influencers %}
+                                <option value="{{ influencer.niche }}">{{ influencer.niche }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-dark">Filter</button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url_for('views.find_influencer',adrequest_id=adrequest_id) }}"><button type="submit" class="btn btn-secondary">Remove filter</button></a>
+                    </div>
+                </form>
+             </div>
+        </div>
+        <hr>
+        <br>
+
+        {% if influencers %}
+            <ul class="influencer-display">
+                <li class="header">
+                    <div class="col-1">Name</div>
+                    <div class="col-2">Reach</div>
+                    <div class="col-3">Niche</div>
+                    <div class="col-4"></div>
+                </li>
+                {% for influencer in influencers %}
+                    <li class="table-row">
+                        <div class="col-1">{{ influencer.name }}</div>
+                        <div class="col-2">{{ influencer.reach }}</div>
+                        <div class="col-3">{{ influencer.niche }}</div>
+                        <div class="col-4">
+                            <form action="{{ url_for('views.sponsor_send_request',influencer_id=influencer.id,adrequest_id=adrequest_id) }}">
+                                <button class="btn btn-secondary">Send Request</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <h4><em>No Influencers Found</em></h4>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

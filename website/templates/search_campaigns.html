@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+                <div class="container-fluid">
+                    <!-- Toggle button -->
+                    <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                        <ul class="nav-links">
+                            <li><a href="{{ url_for('views.influencer_dashboard') }}">Dashboard</a></li>
+                            <li class="center"><a href="{{ url_for('views.influencer_profile') }}">Profile</a></li>
+                            <li class="upward"><a href="{{ url_for('views.influencer_campaigns') }}">Campaigns</a></li>
+                            <li class="forward"><a href="#">Stats</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    
+        <div class="container mt-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <h1>Search Campaigns</h1>
+                </div>
+    
+                <div class="col-md-9 align-item-right">
+                      <form class="row gx-3 gy-2 text-right"  action="{{ url_for('views.search_campaigns') }}" method="post">
+                        <div class="col-sm-3">
+                            
+                            <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+                            <label class="form-label" for="name">Name</label>
+                        </div>
+                        <div class="col-sm-3">
+                            
+                            <input type="date" class="form-control" id="startdate" placeholder="Start Date" name="start_date">
+                            <label class="form-label" for="startdate">Start Date</label>
+                        </div>
+                        <div class="col-sm-3">
+                           
+                            <input type="date" class="form-control" id="enddate" placeholder="End Date" name="end_date">
+                            <label class="form-label" for="enddate">End Date</label>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-dark">Filter</button>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('views.search_campaigns') }}"><button type="submit" class="btn btn-secondary">Remove filter</button></a>
+                        </div>
+                    </form>
+                 </div>
+            </div>
+            <hr>
+            <br>
+            {% if campaigns %}
+                {% for campaign in campaigns %} 
+                <div class="accordion accordion-flush">
+                    <div class="accordion-item">
+                    <h2 class="accordion-header" id="flush-headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ campaign.id }}" aria-expanded="false" aria-controls="flush-collapseOne">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong><em>{{ campaign.name }}</em></strong>
+                                    </div>
+                                    <div class="col-4">
+                                      <strong>Started:</strong> {{ campaign.start_date.strftime('%d/%m/%Y') }}
+                                    </div>
+                                    <div class="col-4">
+                                      <strong>Ending:</strong> {{ campaign.end_date.strftime('%d/%m/%Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </button>
+                    </h2>
+                    
+                    <div id="{{ campaign.id }}" class="accordion-collapse collapse {% if loop.index == 1 %}{{ 'show' }}{% endif %}" aria-labelledby="flush-headingOne">
+                        <div class="accordion-body">
+                            <strong>Sponsor:</strong> {{ campaign.sponsor.name }}
+                            <div class="row">
+                                <div class="col">
+                                    <strong>Description:</strong> {{ campaign.description }}
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                {% for adrequest in campaign.ad_requests %}
+                                    {% if adrequest.status != 'Accepted' %}
+                                        {% set ns = namespace(flag=True) %}
+                                        {% for nego in adrequest.negotiations %} 
+                                            {% if nego.influencer_id == influencer.id %}
+                                                {% set ns.flag = False %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if ns.flag %}
+                                        <div class="col-3 me-3">
+                                            <div class="card text-white bg-dark mb-3">
+                                                <div class="card-body">
+                                                <h5 class="card-title">{{ adrequest.requirements }}</h5>
+                                                <p class="card-text"><strong>Amount:</strong> Rs. {{ adrequest.payment_amount }}</p>
+                                                <hr>
+                                                
+                                                <div class="row justify-content-center">
+                                                    <div class="col-6">
+                                                        <form action="{{ url_for('views.influencer_send_request', adrequest_id=adrequest.id) }}" method="post">
+                                                            <div class="mb-3">
+                                                                <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#card{{ adrequest.id }}">Send Request</button>
+                                                            </div>
+                                                            <div class="collapse" id="card{{ adrequest.id }}">
+                                                                <div class="mb-3">
+                                                                    <label for="negotiation" class="form-label">Enter amount:</label>
+                                                                    <input type="number" class="form-control" id="negotiation" name="negotiation_amount" value="{{ adrequest.payment_amount }}">
+                                                                </div>
+                                                                <button type="submit" name="action" value="negotiate" class="btn btn-success">Send</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                    
+                                                </div>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}    
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <br>
+                {% endfor %}
+            {% else %}
+                <h4><em>No Influencers Found</em></h4>
+            {% endif %}
+
+
+        </div>
+    </div>
+{% endblock %}

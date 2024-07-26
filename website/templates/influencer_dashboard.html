@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+                 <div class="container-fluid">
+                     <!-- Toggle button -->
+                     <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                         <i class="fas fa-bars"></i>
+                     </button>
+                     <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                         <ul class="nav-links">
+                             <li><a href="{{ url_for('views.influencer_dashboard') }}">Dashboard</a></li>
+                             <li class="center"><a href="{{ url_for('views.influencer_profile') }}">Profile</a></li>
+                             <li class="upward"><a href="{{ url_for('views.influencer_campaigns') }}">Campaigns</a></li>
+                             <li class="forward"><a href="#">Stats</a></li>
+                         </ul>
+                     </div>
+                 </div>
+             </nav>
+        </div>
+
+        <div class="container mt-3">
+            <h1>Welcome {{ influencer.name }}</h1>
+            <hr>
+            <br>
+            <h2>Active Campaigns</h2>
+            {% if influencer.ad_requests %}
+                <ul class="campaign-display">
+                    {% for ad in influencer.ad_requests %}
+                        <li class="row">
+                            <div class="col">{{ ad.campaign.name }}</div>
+                            <div class="col">{{ (ad.campaign.end_date - current_date).days }} days left</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No active campaigns</em></p>
+            {% endif %}
+            <br>
+            <h2>Notifications</h2>
+            {% if negotiations %}
+                <ul class="notification-display">
+                    {% for nego in negotiations %}
+                    {% if nego.message != 'influencer_new' %}
+                        <li class="row" >
+                            
+                            {% if nego.message == 'sponsor_new' %}
+                            <div class="col-8"><strong>New request for {{ nego.ad_request.campaign.name }}</strong></div>
+                            {% elif nego.message == 'sponsor_negotiated' %}
+                            <div class="col-8"><strong>New amount negotiated for {{ nego.ad_request.campaign.name }}</strong></div>
+                            {% elif nego.message == 'sponsor_accepted' %}
+                            <div class="col-8"><strong>Request for {{ nego.ad_request.campaign.name }} is ACCEPTED</strong></div>
+                            {% endif %}
+
+                            <div class="col-4 text-right"><a href="{{ url_for('views.influencer_campaigns') }}"><button class="btn btn-dark">View</button></a></div>
+                        </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            <!-- {% elif negotiated_request %}
+                <ul class="campaign-display"></ul>
+                    {% for adrequest in negotiated_requests %}
+                        <li class="row" style="background-color: #d35068">
+                            <div class="col">New amount negotiated for {{ adrequest.campaign.name }}</div>
+                            <div class="col"><button class="btn btn-secondary">View</button></div>
+                        </li>
+                    {% endfor %}
+                </ul> -->
+            {% else %}
+                <p><em>No notifications</em></p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

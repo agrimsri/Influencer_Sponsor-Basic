@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+            <div class="container-fluid">
+                <!-- Toggle button -->
+                <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('views.sponsor_dashboard') }}">Dashboard</a></li>
+                        <li class="center"><a href="{{ url_for('views.sponsor_profile') }}">Profile</a></li>
+                        <li class="upward"><a href="{{ url_for('views.sponsor_campaigns') }}">Campaigns</a></li>
+                        <li class="forward"><a href="#">Stats</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    {% if campaign.flagged == 'True' %}
+    <div class="flag">
+        This campaign has been Flagged
+    </div>
+    <br>
+    {% endif %}
+
+    <div class="container mt-3">
+        <h1>Campaign Details</h1>
+        <br>
+        <form action="{{ url_for('views.campaign_details', campaign_id=campaign.id) }}" class="profile" method="post">
+            <div class="campaign-form">
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">Name</span>
+                <input type="text" name="name" value="{{ campaign.name }}" placeholder="{{ campaign.name }}" class="form-control">
+            </div>
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">Start Date</span>
+                <input type="text" class="form-control" name="start_date" value="{{ campaign.start_date }}">
+            </div>
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">End Date</span>
+                <input type="text" class="form-control" name="end_date" value="{{ campaign.end_date }}" placeholder="{{ campaign.end_date }}">
+            </div>
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">Budget</span>
+                <input type="text" class="form-control" name="budget" value="{{ campaign.budget }}" placeholder="{{ campaign.budget }}">
+            </div>
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">Visibility</span>
+                <select class="form-select" name="visibility" id="visibility" required>
+                    {% if campaign.visibility == 'Public' %}
+                        <option value="Public" selected>Public</option>
+                        <option value="Private">Private</option>
+                    {% else %}
+                        <option value="Public">Public</option>
+                        <option value="Private" selected>Private</option>
+                    {% endif %}
+                </select>
+                <!-- <input type="text" class="form-control" name="visibility" value="{{ campaign.visibility }}" placeholder="{{ campaign.visibility }}"> -->
+            </div>
+            <div class="input-group mb-3 input-group-lg">
+                <span class="input-group-text">Description</span>
+                <textarea type="text" class="form-control" name="description">{{ campaign.description }}</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="submit" class="grey-btn" name="action" value="update">Update</button>
+                </div>
+                <div class="col-md-6 text-right">
+                    <button type="submit" class="red-btn" name="action" value="delete">Delete</button>
+                </div>
+            </div>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+<div class="container mt-3">
+    <hr>
+    <h1>Ad Requests</h1>
+    <br>
+    <div class="row row-cols-1 row-cols-md-4 g-3">
+        
+        {% for adrequest in campaign.ad_requests %}
+            <div class="accordion col" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ adrequest.id }}">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ adrequest.id }}" aria-expanded="true" aria-controls="collapse{{ adrequest.id }}">
+                            <div class="container">
+                                <div class="row">
+                                  <div class="col"><h5><strong>{{ adrequest.requirements }}</strong></h5></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col"><strong>Amount: Rs. {{ adrequest.payment_amount }}</strong></div>
+                                </div>
+                            </div>
+                            
+                        </button>
+                    </h2>
+                    <div id="collapse{{ adrequest.id }}" class="accordion-collapse collapse show" aria-labelledby="heading{{ adrequest.id }}" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <ul class="list-group list-group-flush">
+                                {% if adrequest.influencer_id %}
+                                    <li class="list-group-item">
+                                        <strong>Status:</strong> Accepted 
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Influencer:</strong> {{ adrequest.influencer.name }}
+                                    </li>
+                                {% elif not adrequest.negotiations %}
+                                    <li class="list-group-item">
+                                        <strong>Status:</strong> Pending
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Influencer:</strong> Not assigned
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div class="row justify-content-center">
+                                            <div class="col-7">
+                                                <a href="{{ url_for('views.find_influencer', adrequest_id=adrequest.id) }}">
+                                                    <button class="btn btn-success">Find Influencer</button>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <div class="container">
+                                    <div class="row justify-content-md-center">
+                                        <div class="col-8">
+                                        <form action="{{ url_for('views.update_delete', adrequest_id=adrequest.id) }}" method="post">
+                                            <div class="mb-3">
+                                                <button type="button" class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#updateAdrequest">Update</button>
+                                                <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+                                            </div>
+                                            <div class="collapse" id="updateAdrequest">
+                                                <div class="mb-3">
+                                                    <label for="requirements" class="form-label">Requirements:</label>
+                                                    <textarea name="requirements" id="requirements"></textarea>
+                                                    <label for="amount" class="form-label">Amount:</label>
+                                                    <input type="number" class="form-control" id="amount" name="amount">
+                                                </div>
+                                                <button type="submit" name="action" value="update" class="btn btn-dark">Save</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    </div>
+                                    </div>    
+                                {% else %}
+                                    {% set negotiation_found = False %}
+                                    {% for negotiation in adrequest.negotiations %}
+                                        {% if (not negotiation_found) and negotiation.message=='sponsor_new' %}
+                                            <li class="list-group-item">
+                                                <strong>Status:</strong> Request sent
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Influencer:</strong> {{ negotiation.influencer.name }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <div class="row justify-content-center">
+                                                    <div class="col-6">
+                                                        <a href="{{ url_for('views.find_influencer', adrequest_id=adrequest.id) }}">
+                                                            <button class="btn btn-dark">Change Influencer</button>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </li> 
+                                            <div class="container">
+                                                <div class="row justify-content-md-center">
+                                                    <div class="col-8">
+                                                    <form action="{{ url_for('views.update_delete', adrequest_id=adrequest.id) }}" method="post">
+                                                        <div class="mb-3">
+                                                            <button type="button" class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#updateAdrequest">Update</button>
+                                                            <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+                                                        </div>
+                                                        <div class="collapse" id="updateAdrequest">
+                                                            <div class="mb-3">
+                                                                <label for="requirements" class="form-label">Requirements:</label>
+                                                                <textarea name="requirements" id="requirements"></textarea>
+                                                                <label for="amount" class="form-label">Amount:</label>
+                                                                <input type="number" class="form-control" id="amount" name="amount">
+                                                            </div>
+                                                            <button type="submit" name="action" value="update" class="btn btn-dark">Save</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                </div>
+                                                </div>
+                                            {% set negotiation_found = True %}
+
+                                        {% elif (not negotiation_found) and negotiation.message in ['influencer_new','influencer_negotiated'] %}
+                                            <li class="list-group-item" id="new-request">
+                                                <strong>Status:</strong>
+                                                {% if negotiation.message=='influencer_new'%}
+                                                New Request
+                                                {% else %}
+                                                Influencer Negotiated
+                                                {% endif %}
+                                            </li>
+                                            <li class="list-group-item" id="new-request">
+                                                <strong>Influencer:</strong> {{ negotiation.influencer.name }}
+                                            </li>
+                                            <li class="list-group-item" id="new-request">
+                                                <strong>Proposed Amount:</strong> Rs. {{ negotiation.proposed_amount }}
+                                            </li>
+                                            <br>
+                                            <div class="row justify-content-center">
+                                                <div class="col">
+                                                    <form action="{{ url_for('views.sponsor_decisions', negotiation_id=negotiation.id) }}" method="post">
+                                                        <div class="mb-3">
+                                                            <input type="hidden" name="form_id" value="new_request">
+                                                            <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+                                                            <button type="button" class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#negotiateInput">Negotiate</button>
+                                                            <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                                                        </div>
+                                                        <div class="collapse" id="negotiateInput">
+                                                            <div class="mb-3">
+                                                                <label for="negotiation" class="form-label">Enter amount:</label>
+                                                                <input type="number" class="form-control" id="negotiation" name="negotiation">
+                                                            </div>
+                                                            <button type="submit" name="action" value="negotiate" class="btn btn-dark">Send</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            {% set negotiation_found = True %}
+                                        {% elif (not negotiation_found) and negotiation.message=='sponsor_negotiated' %}
+                                            <li class="list-group-item">
+                                                <strong>Status:</strong> Negotiated
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Influencer:</strong> {{ negotiation.influencer.name }}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <strong>Proposed Amount:</strong> Rs. {{ negotiation.proposed_amount }}
+                                            </li>
+                                            <div class="container">
+                                                <div class="row justify-content-md-center">
+                                                    <div class="col-8">
+                                                    <form action="{{ url_for('views.update_delete', adrequest_id=adrequest.id) }}" method="post">
+                                                        <div class="mb-3">
+                                                            <button type="button" class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#updateAdrequest">Update</button>
+                                                            <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+                                                        </div>
+                                                        <div class="collapse" id="updateAdrequest">
+                                                            <div class="mb-3">
+                                                                <label for="requirements" class="form-label">Requirements:</label>
+                                                                <textarea name="requirements" id="requirements"></textarea>
+                                                                <label for="amount" class="form-label">Amount:</label>
+                                                                <input type="number" class="form-control" id="amount" name="amount">
+                                                            </div>
+                                                            <button type="submit" name="action" value="update" class="btn btn-dark">Save</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                </div>
+                                                </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <br>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="grey-btn" data-bs-toggle="modal" data-bs-target="#createRequest">
+        New Request
+    </button>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="createRequest" tabindex="-1" aria-labelledby="createRequestLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="createRequestLabel">Create Ad Request</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <form action="{{ url_for('views.create_adrequest',campaign_id=campaign.id) }}" method="POST">
+                <div class="mb-3">
+                    <label for="requirements" class="form-label">Requirements</label>
+                    <textarea type="text" class="form-control" name="requirements" id="requirements" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Initial Amount</label>
+                    <input type="text" class="form-control" name="amount" id="amount" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+            </div>
+            
+        </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
