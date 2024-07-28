@@ -1,4 +1,5 @@
 from flask import Blueprint,render_template,request,flash,redirect,url_for
+from sqlalchemy import desc
 from flask_login import current_user,login_required
 from .models import *
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -56,9 +57,13 @@ def sponsor_profile():
 @views.route('sponsor/campaigns',  methods=['GET', 'POST'])
 @login_required
 def sponsor_campaigns():
-    sponsor = Sponsor.query.get(current_user.id) 
-    noflag_campaigns = [campaign for campaign in sponsor.campaigns if campaign.flagged == 'False']
-    flag_campaigns = [campaign for campaign in sponsor.campaigns if campaign.flagged == 'True']
+    sponsor = Sponsor.query.get(current_user.id)
+    query = Campaign.query
+    query = query.filter( Campaign.sponsor_id == sponsor.id)
+    running_camp = query.filter( Campaign.end_date > datetime.now().date())
+    noflag_campaigns = running_camp.filter_by( flagged = 'False').all()
+    flag_campaigns = running_camp.filter_by( flagged = 'True').all()
+
     if request.method == 'POST':
         campaign_name_filter = request.form.get('campaign_filter')
         if campaign_name_filter:
@@ -66,7 +71,8 @@ def sponsor_campaigns():
             flag_campaigns = [campaign for campaign in flag_campaigns if campaign_name_filter.lower() in campaign.name.lower()]
             return render_template('campaigns.html', user=current_user, noflag_campaigns=noflag_campaigns, flag_campaigns=flag_campaigns)
         else:
-            return render_template('campaigns.html', user=current_user, noflag_campaigns=noflag_campaigns, flag_campaigns=flag_campaigns)    
+            return render_template('campaigns.html', user=current_user, noflag_campaigns=noflag_campaigns, flag_campaigns=flag_campaigns)
+            
     return render_template('campaigns.html', user=current_user, noflag_campaigns=noflag_campaigns, flag_campaigns=flag_campaigns)
 
 @views.route('create_campaign', methods=['POST'])
@@ -137,6 +143,23 @@ def campaign_details(campaign_id):
        
     return render_template('campaign_details.html', user=current_user, campaign=campaign)
 
+@views.route('sponsor/stats')
+@login_required
+def sponsor_stats():
+    sponsor = Sponsor.query.get(current_user.id)
+    bar_data = [0,0,0]
+    for camp in sponsor.campaigns:
+        if camp.start_date > datetime.now().date():
+            bar_data[0] += 1
+        elif camp.start_date <= datetime.now().date() and camp.end_date >= datetime.now().date():
+            bar_data[1] += 1
+        else:
+            bar_data[2] += 1
+
+    return render_template('sponsor_stats.html', user=current_user, sponsor = sponsor, bar_data=bar_data, today_date= datetime.now().date())
+
+
+
 @views.route('sponsor/decisions/<int:negotiation_id>', methods=['GET', 'POST'])
 @login_required
 def sponsor_decisions(negotiation_id):
@@ -147,6 +170,18 @@ def sponsor_decisions(negotiation_id):
         if form_id == 'new_request':
             action = request.form.get('action')
             if action == 'accept':
+                if negotiation.sponsor.total_spent:
+                    negotiation.sponsor.total_spent += negotiation.proposed_amount
+                else:
+                    negotiation.sponsor.total_spent = negotiation.proposed_amount
+                
+                if negotiation.influencer.earning:
+                    negotiation.influencer.earning += negotiation.proposed_amount
+                else:
+                    negotiation.influencer.earning = negotiation.proposed_amount
+                    
+                negotiation.sponsor.total_spent += negotiation.ad_request.payment_amount
+                negotiation.influencer.earning += negotiation.ad_request.payment_amount
                 negotiation.ad_request.influencer_id = negotiation.influencer_id
                 negotiation.ad_request.status = 'Accepted'
                 negotiation.message = 'sponsor_accepted'    
@@ -375,6 +410,16 @@ def influencer_negotiate(nego_id):
     if request.method == 'POST':
         action = request.form['action']
         if action == 'accept':
+            if negotiation.sponsor.total_spent:
+                negotiation.sponsor.total_spent += negotiation.proposed_amount
+            else:
+                negotiation.sponsor.total_spent = negotiation.proposed_amount
+                
+            if influencer.earning:
+                influencer.earning += negotiation.proposed_amount
+            else:
+                influencer.earning = negotiation.proposed_amount
+                
             adrequest.influencer_id = influencer.id
             adrequest.status = 'Accepted'
             adrequest.payment_amount = negotiation.proposed_amount
@@ -397,14 +442,131 @@ def influencer_negotiate(nego_id):
             
         
         return redirect(url_for('views.influencer_campaigns'))    
+    
+@views.route('influencer/stats')
+@login_required
+def influencer_stats():
+    influencer = Influencer.query.get(current_user.id)
+
+    return render_template('influencer_stats.html', user=current_user, influencer = influencer, today_date= datetime.now().date())
 
     
 ### END SINFLUENCER ROUTES ###
 
 
 ### ADMIN ROUTES ###
-@views.route('/admin_dashboard')
+@views.route('/admin_dashboard',methods=['POST','GET'])
+@login_required
 def admin_dashboard():
-    return render_template('admin_dashboard.html', user = current_user)
+    highest = db.session.query(
+    Campaign.id,
+    Campaign.name,
+    db.func.sum(AdRequest.payment_amount).label('total_payment')
+    ).join(
+    AdRequest, Campaign.id == AdRequest.campaign_id
+    ).group_by(
+    Campaign.id
+    ).order_by(
+    desc('total_payment')).limit(5).all()
+    print()
+    highest = [[camp.name,camp.total_payment] for camp in highest]
+    highest_labels = [li[0] for li in highest]
+    highest_data = [li[1] for li in highest]
+    
+    campaigns = Campaign.query.filter( Campaign.end_date > datetime.now().date()).all()
+    sponsors = Sponsor.query.all()
+    influencers = Influencer.query.all()
+    adrequests = AdRequest.query.all()
+    return render_template('admin_dashboard.html',user=current_user, campaigns = campaigns, sponsors = sponsors, influencers = influencers, adrequests = adrequests, highest_labels=highest_labels, highest_data=highest_data)
+
+# @views.route('/admin_manage',methods=['POST','GET'])
+# @login_required
+# def admin_manage():
+#     campaigns = Campaign.query.filter( Campaign.end_date > datetime.now().date()).all()
+#     sponsors = Sponsor.query.all()
+#     influencers = Influencer.query.all()
+#     adrequests = AdRequest.query.all()   
+#     return render_template('admin_manage.html', user=current_user,  campaigns = campaigns, sponsors = sponsors, influencers = influencers, adrequests = adrequests)
+
+@views.route('/admin/view_sponsors',methods=['GET','POST'])
+@login_required
+def view_sponsors():
+    sponsor = Sponsor.query.get(id)
+    sponsor.flagged = 'True'
+    db.session.commit()
+    
+@views.route('/admin/view_influencers',methods=['GET','POST'])
+@login_required
+def view_influencers():
+    sponsor = Sponsor.query.get(id)
+    sponsor.flagged = 'True'
+    db.session.commit()
+    
+@views.route('/admin/view_campaigns',methods=['GET','POST'])
+@login_required
+def view_campaigns():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        flagged = request.form.get('flagged')
+        
+        query = Campaign.query
+        query = query.filter(Campaign.end_date > datetime.now().date())
+        
+        if name:
+            query = query.filter(Campaign.name.ilike(f'%{name}%'))
+       
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            query = query.filter(Campaign.start_date > start_date)
+
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            query = query.filter(Campaign.end_date < end_date)
+            
+        if flagged:
+            query = query.filter(Campaign.flagged == flagged)
+
+        campaigns = query.all()
+        return render_template('view_campaigns.html', user=current_user, campaigns=campaigns)
+        
+    campaigns = Campaign.query.filter(Campaign.end_date > datetime.now().date()).all()
+    return render_template('view_campaigns.html', user=current_user, campaigns=campaigns)
+    
+@views.route('/admin/flag/<string:type>/<int:id>', methods=['POST'])
+@login_required
+def flag(type,id):
+    if type == 'campaign':
+        campaign = Campaign.query.get(id)
+        campaign.flagged = 'True'
+        db.session.commit()
+    elif type == 'influencer':
+        influencer = Influencer.query.get(id)
+        influencer.user.flagged = 'True'
+        db.session.commit()
+    elif type == 'sponsor':
+        sponsor = Sponsor.query.get(id)
+        sponsor.user.flagged = 'True'
+        db.session.commit()
+    return redirect(url_for('views.view_campaigns'))
+
+@views.route('/admin/unflag/<string:type>/<int:id>', methods=['POST'])
+@login_required
+def unflag(type,id):
+    if type == 'campaign':
+        campaign = Campaign.query.get(id)
+        campaign.flagged = 'False'
+        db.session.commit()
+    elif type == 'influencer':
+        influencer = Influencer.query.get(id)
+        influencer.user.flagged = 'False'
+        db.session.commit()
+    elif type == 'sponsor':
+        sponsor = Sponsor.query.get(id)
+        sponsor.user.flagged = 'False'
+        db.session.commit()
+    return redirect(url_for('views.view_campaigns'))
+
 ### END ADMIN ROUTES ###
 

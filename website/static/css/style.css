@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    padding: 0;
+    padding-top: 56px;
     font-family: 'Times New Roman', serif;
     background-color: rgb(221, 208, 200);
 }
@@ -8,6 +8,20 @@ body {
 .login-card{
     margin-bottom:40px;
     border:none;
+}
+
+#scroll {
+  position: relative; 
+  height: 400px;
+  overflow-y: scroll;
+  padding-top: 0px;
+  border: 3px solid #0c0d0d;
+
+}
+
+#stats {
+      background-color: rgb(12, 12, 12);
+      color: #ffffff;
 }
 
 .box {
@@ -375,10 +389,17 @@ body {
 } 
 
 .accordion {
+  #admin-view {
+    box-shadow: 1px 38px 74px #211b1b, 4px 15px 10px #3f3c3c;
+  }
   
   .accordion-button {
     background-color: #95A5A6;
   }
+  #flagged{ 
+    background-color: #b17575;
+  }
+
   #new-amount {
     background-color: rgb(125 180 179);
   }

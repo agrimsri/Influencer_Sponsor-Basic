@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+       <nav id="sponsor_navbar" class="navbar navbar-expand-lg mt-2" >
+            <div class="container-fluid">
+                <!-- Toggle button -->
+                <button data-mdb-collapse-init class="navbar-toggler" type="button" data-mdb-target="#navbarCenteredExample" aria-controls="navbarCenteredExample" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarCenteredExample">
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('views.sponsor_dashboard') }}">Dashboard</a></li>
+                        <li class="center"><a href="{{ url_for('views.sponsor_profile') }}">Profile</a></li>
+                        <li class="upward"><a href="{{ url_for('views.sponsor_campaigns') }}">Campaigns</a></li>
+                        <li class="forward"><a href="{{ url_for('views.sponsor_stats') }}">Stats</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div class="container-fluid" id="stats">
+        <div class="row gx-3">
+            <div class="col-5">
+                <canvas id="lineChart" height="500" width="500"></canvas>
+            </div>
+            <div class="col-7">
+                <h1>Active Campigns</h1>
+                <br>
+                <div>
+                  <h4>Total Campaigns: {{ sponsor.campaigns | length }}</h4>
+                </div>
+                <br>
+                {% for camp in sponsor.campaigns %}
+                    {% if camp.end_date > today_date  and camp.start_date < today_date %}
+                        <div class="row">
+                            <div class="col"><h5>{{ camp.name }}</h5></div>
+                            <div class="col">Total Adrequests: {{ camp.ad_requests | length }}</div>
+                        </div>
+                        <!-- <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                        </div> -->
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ ((today_date-camp.start_date)/(camp.end_date - camp.start_date))*100 }}%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ (camp.end_date-today_date).days }} days left</div>
+                        </div>
+                        <br>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row gx-3 mt-5">
+            <div class="col-4">
+                <div class="card border-danger bg-dark text-light mb-3" >
+                    <div class="card-body">
+                      <h5 class="card-title">Total Amount Spent: Rs.{{ sponsor.total_spent }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+      <script>
+        var ctx = document.getElementById('lineChart').getContext("2d");
+      
+        var lineChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Not Started', 'Ongoing', 'Completed'],
+            datasets: [{
+              label: 'Campaigns',
+              data: {{ bar_data | safe }},
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive : true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      </script>
+    </div>      
+
+
+</div>
+{% endblock %}

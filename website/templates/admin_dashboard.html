@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+
+<div class="container-fluid" >
+  <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+    <div>
+      <h1 class="fw-bold mb-3">Dashboard</h1>
+    </div>
+    <div class="ms-md-auto py-2 py-md-0">
+      <div class="dropdown">
+        <a class="dropdown-toggle btn grey-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          View
+        </a>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('views.view_campaigns') }}">Campaigns</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('views.view_sponsors') }}">Sponsors</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('views.view_influencers') }}">Influencers</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-10 col-sm-3 col-md-3">
+      <div class="card card-style mb-2">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3><b>Total Users</b></h3>
+            </div>
+            <h2 class="text-info fw-bold">{{ (sponsors | length) + (influencers | length) }}</h2>
+          </div>
+          <div class="chart-container" style="position: relative;">
+            <canvas id="users_count"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-10 col-sm-9 col-md-9">
+      <div class="card card-style mb-2">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h3><b>Total Campaigns - {{ campaigns | length }}</b></h3>
+            </div>
+          </div>
+          <div class="chart-container" style="position: relative;">
+            <canvas id="high_camp"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const user_data = {
+      labels: [
+        'Sponsors',
+        'Influencers',
+      ],
+      datasets: [{
+        data: [{{ influencers | length }}, {{ sponsors | length }}],
+        backgroundColor: [
+          'rgb(255, 99, 132)',
+          'rgb(54, 162, 235)',
+        ],
+        hoverOffset: 4
+      }]
+
+    };
+    const user_config = {
+      type: 'doughnut',
+      data: user_data,
+      options: {
+        responsive: false,
+      }
+    };
+
+    const high_data = {
+      labels: {{ highest_labels | safe }},
+      datasets: [{
+        label: 'Top Campaigns',
+        data: {{ highest_data | safe }},
+        borderWidth: 1
+      }],
+    };
+
+    const high_config = {
+      type: 'bar',
+      data: high_data,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      },
+    };
+
+    
+    window.onload = function() {
+
+      // Initialize Doughnut Chart
+      const doughnutCtx = document.getElementById('users_count').getContext('2d');
+      new Chart(doughnutCtx, user_config);
+
+      const barCtx = document.getElementById('high_camp').getContext('2d');
+      new Chart(barCtx, high_config);
+
+
+    }
+</script>
+{% endblock %}

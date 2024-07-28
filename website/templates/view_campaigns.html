@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}View Campaigns{% endblock %}
+
+{% block content %}
+
+
+<div class="container-fluid" >
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+        <div>
+            <h1 class="fw-bold mb-3">Campaigns</h1>
+        </div>
+        <div class="ms-md-auto py-2 py-md-0">
+            <a href="{{ url_for('views.admin_dashboard') }}" class="btn grey-btn">Dashboard</a>
+        </div>
+    </div>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-3">
+                <h1>Search Campaigns</h1>
+            </div>
+
+            <div class="col-md-9">
+                  <form class="row gx-3 gy-2"  action="{{ url_for('views.view_campaigns') }}" method="post">
+                    <div class="col-sm-3">
+                        
+                        <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+                        <label class="form-label" for="name">Name</label>
+                    </div>
+                    <div class="col-sm-3">
+                        
+                        <input type="date" class="form-control" id="startdate" placeholder="Start Date" name="start_date">
+                        <label class="form-label" for="startdate">Start Date</label>
+                    </div>
+                    <div class="col-sm-3">
+                       
+                        <input type="date" class="form-control" id="enddate" placeholder="End Date" name="end_date">
+                        <label class="form-label" for="enddate">End Date</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="flagged" value="True" id="flexCheckChecked">
+                            <label class="form-check-label" for="flexCheckChecked">
+                                Flagged
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-dark">Filter</button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url_for('views.view_campaigns') }}"><button type="submit" class="btn btn-secondary">Remove filter</button></a>
+                    </div>
+                </form>
+             </div>
+        </div>
+        <hr>
+        <br>
+        {% if campaigns %}
+            {% for campaign in campaigns %} 
+            <div class="accordion accordion-flush" id="admin-view">
+                <div class="accordion-item">
+                <h2 class="accordion-header" id="flush-headingOne">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ campaign.id }}" aria-expanded="false" aria-controls="flush-collapseOne" {% if campaign.flagged=='True' %}id='flagged'{% endif %}>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-4">
+                                    <strong><em>{{ campaign.name }}</em></strong>
+                                </div>
+                                <div class="col-4">
+                                  <strong>Started:</strong> {{ campaign.start_date.strftime('%d/%m/%Y') }}
+                                </div>
+                                <div class="col-4">
+                                  <strong>Ending:</strong> {{ campaign.end_date.strftime('%d/%m/%Y') }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </button>
+                </h2>
+                
+                <div id="{{ campaign.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne">
+                    <div class="accordion-body">
+                        <strong>Sponsor:</strong> {{ campaign.sponsor.name }}
+                        <div class="row">
+                            <div class="col">
+                                <strong>Description:</strong> {{ campaign.description }}
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            {% for adrequest in campaign.ad_requests %}
+                                <div class="col-3 me-3">
+                                    <div class="card text-white bg-dark mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ adrequest.requirements }}</h5>
+                                            <p class="card-text"><strong>Amount:</strong> Rs. {{ adrequest.payment_amount }}</p>
+                                            {% if adrequest.influencer_id %}
+                                            <p class="card-text"><strong>Influencer:</strong>{{ adrequest.influencer.name }} </p>
+                                            {% else %}
+                                            <p class="card-text"><strong>Influencer:</strong> Not Assigned
+                                            {% endif %}
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}    
+                        </div>
+                        <hr>
+
+                        
+                        <div class="row justify-content-center">
+                            {% if campaign.flagged != 'True' %}
+                                <div class="col-2">
+                                    <form action="{{ url_for('views.flag',type='campaign',id=campaign.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Flag Campaign</button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <div class="col-2">
+                                    <form action="{{ url_for('views.unflag',type='campaign',id=campaign.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-info">Undo Flag</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        {% else %}
+            <h4><em>No Campaigns Found</em></h4>
+        {% endif %}
+
+
+    </div>
+</div>
+{% endblock %}
