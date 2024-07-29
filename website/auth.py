@@ -82,16 +82,20 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         user = User.query.filter_by(email = email).first()
-        if user.role == 'admin':
-            if password == '123456789':
-                login_user(user, remember=True)
-                flash('Logged in successfully', category='success')
-            else:
-                flash('Incorrect password', category='error')
-            return redirect(url_for('views.admin_dashboard'))
+        
         if user:
+            if user.role == 'admin':
+                if password == '123456789':
+                    login_user(user, remember=True)
+                    flash('Logged in successfully', category='success')
+                    return redirect(url_for('views.admin_dashboard'))
+                else:
+                    flash('Incorrect password', category='error')
+                    return redirect(url_for('auth.login'))
+                
             if user.flagged == 'True':
                 flash('Your account has been flagged. Please contact admin', category='error')
+                return redirect(url_for('auth.login'))
             elif check_password_hash(user.password, password):
                 login_user(user, remember=True)
                 flash('Logged in successfully', category='success')
@@ -103,6 +107,8 @@ def login():
                     return redirect(url_for('views.admin_dashboard'))
             else:
                 flash('Incorrect password', category='error')
+                return redirect(url_for('auth.login'))
         else:
             flash('User does not exist, Signup now', category='error')
+            return redirect(url_for('auth.login'))
     return render_template('login.html',user = current_user)

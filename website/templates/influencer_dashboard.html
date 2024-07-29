@@ -31,10 +31,12 @@
             {% if influencer.ad_requests %}
                 <ul class="campaign-display">
                     {% for ad in influencer.ad_requests %}
+                    {% if (ad.campaign.end_date - current_date).days >= 0 %}
                         <li class="row">
                             <div class="col">{{ ad.campaign.name }}</div>
                             <div class="col">{{ (ad.campaign.end_date - current_date).days }} days left</div>
                         </li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
             {% else %}

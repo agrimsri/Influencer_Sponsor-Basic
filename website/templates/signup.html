@@ -5,64 +5,62 @@
 
 {% block content %}
     {% if user_type == 'sponsor' %}
-    <div class="row">
-    <div class="col-md-6">
-    <div class="login-card">
-      <form action="{{ url_for('auth.signup_sponsor') }}" method="post" class="box">
-        <h1>Signup</h1>
-        <br>
-        <div class="row">
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="name" placeholder="Company/Individual Name">            
+      <div class="row justify-content-center">
+        <div class="col-md-auto">
+          <form action="{{ url_for('auth.signup_sponsor') }}" method="post" class="box">
+            <h1>Signup</h1>
+            <br>
+            <div class="row">
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="name" placeholder="Company/Individual Name">            
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="email" placeholder="Email">
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="email" placeholder="Email">
+    
+            <div class="row">
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="industry" placeholder="Industry">           
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="budget" placeholder="Budget">
+                </div>
+              </div>
             </div>
-          </div>
+    
+            <div class="row">
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="password" placeholder="Password">           
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div data-mdb-input-init class="form-outline">
+                  <input type="text" name="confirm_password" placeholder="Confirm Password">
+                </div>
+              </div>
+            </div>
+            <br>
+            <input type="submit" value="Signup">
+            <a href="{{ url_for('auth.login') }}"><p class="text-muted"> Already have an account</p></a>
+          </form>
         </div>
-
-        <div class="row">
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="industry" placeholder="Industry">           
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="budget" placeholder="Budget">
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="password" placeholder="Password">           
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div data-mdb-input-init class="form-outline">
-              <input type="text" name="confirm_password" placeholder="Confirm Password">
-            </div>
-          </div>
-        </div>
-        <br>
-        <input type="submit" value="Signup">
-        <a href="{{ url_for('auth.login') }}"><p class="text-muted"> Already have an account</p></a>
-      </form>
-    </div>
-    </div>
+                  
     </div>
 
-        {% endif %}
+    {% endif %} 
 
     {% if user_type == 'influencer' %}
-    <div class="row">
-      <div class="col-md-6">
-      <div class="login-card">
+    <div class="row justify-content-center">
+      <div class="col-md-auto">
         <form action="{{ url_for('auth.signup_influencer') }}" method="post" class="box">
           <h1>Signup</h1>
           <br>
@@ -116,7 +114,6 @@
           <input type="submit" value="Signup">
           <a href="{{ url_for('auth.login') }}"><p class="text-muted"> Already have an account</p></a>
         </form>
-      </div>
       </div>
       </div>
   

@@ -59,6 +59,7 @@
             <br>
             {% if campaigns %}
                 {% for campaign in campaigns %} 
+                {% if campaign.sponsor.user.flagged == 'False' %}
                 <div class="accordion accordion-flush">
                     <div class="accordion-item">
                     <h2 class="accordion-header" id="flush-headingOne">
@@ -136,9 +137,10 @@
                     </div>
                 </div>
                 <br>
+                {% endif %}
                 {% endfor %}
             {% else %}
-                <h4><em>No Influencers Found</em></h4>
+                <h4><em>No Campaigns Found</em></h4>
             {% endif %}
 
 

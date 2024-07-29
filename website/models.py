@@ -22,7 +22,7 @@ class Sponsor(db.Model):
     name = db.Column(db.String(150), nullable=False)
     industry = db.Column(db.String(100), nullable=False)
     budget = db.Column(db.Float, nullable=False)
-    total_spent = db.Column(db.Integer, nullable=True)
+    total_spent = db.Column(db.Float, nullable=True)
 
     # Relationships
     user = db.relationship('User', back_populates='sponsor')
@@ -36,7 +36,7 @@ class Influencer(db.Model):
     category = db.Column(db.String(100), nullable=False)
     niche = db.Column(db.String(100), nullable=False)
     reach = db.Column(db.Integer, nullable=False)
-    earning = db.Column(db.Integer, nullable=True)
+    earning = db.Column(db.Float, nullable=True)
 
     # Relationships
     user = db.relationship('User', back_populates='influencer')

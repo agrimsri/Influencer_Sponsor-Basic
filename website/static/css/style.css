@@ -5,11 +5,6 @@ body {
     background-color: rgb(221, 208, 200);
 }
 
-.login-card{
-    margin-bottom:40px;
-    border:none;
-}
-
 #scroll {
   position: relative; 
   height: 400px;
@@ -27,9 +22,6 @@ body {
 .box {
     width: auto;
     padding: 40px;
-    position: absolute;
-    top: 9%;
-    left: 33%;
     border-radius: 40px;
     background: #191919;
     text-align: center;

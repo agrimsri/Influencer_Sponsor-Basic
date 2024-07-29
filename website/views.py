@@ -345,7 +345,7 @@ def influencer_campaigns():
     influencer_nego = Negotiation.query.filter_by(influencer_id=influencer.id, message='influencer_negotiated').all()
     sponsor_nego = Negotiation.query.filter_by(influencer_id=influencer.id, message='sponsor_negotiated').all()
    
-    return render_template('influencer_campaigns.html', user=current_user,influencer=influencer, new_nego=new_nego,sent_requests=sent_requests, influencer_nego=influencer_nego, sponsor_nego=sponsor_nego)
+    return render_template('influencer_campaigns.html', user=current_user,influencer=influencer, new_nego=new_nego,sent_requests=sent_requests, influencer_nego=influencer_nego, sponsor_nego=sponsor_nego, today_date=datetime.now().date())
 
 @views.route('/influencer/search_campaigns', methods=['GET','POST'])
 @login_required
@@ -463,12 +463,13 @@ def admin_dashboard():
     Campaign.name,
     db.func.sum(AdRequest.payment_amount).label('total_payment')
     ).join(
-    AdRequest, Campaign.id == AdRequest.campaign_id
+    AdRequest, Campaign.id == AdRequest.campaign_id and 
+               Campaign.end_date>datetime.now().date() and
+               Campaign.start_date<=datetime.now().date()
     ).group_by(
     Campaign.id
     ).order_by(
     desc('total_payment')).limit(5).all()
-    print()
     highest = [[camp.name,camp.total_payment] for camp in highest]
     highest_labels = [li[0] for li in highest]
     highest_data = [li[1] for li in highest]
@@ -478,15 +479,6 @@ def admin_dashboard():
     influencers = Influencer.query.all()
     adrequests = AdRequest.query.all()
     return render_template('admin_dashboard.html',user=current_user, campaigns = campaigns, sponsors = sponsors, influencers = influencers, adrequests = adrequests, highest_labels=highest_labels, highest_data=highest_data)
-
-# @views.route('/admin_manage',methods=['POST','GET'])
-# @login_required
-# def admin_manage():
-#     campaigns = Campaign.query.filter( Campaign.end_date > datetime.now().date()).all()
-#     sponsors = Sponsor.query.all()
-#     influencers = Influencer.query.all()
-#     adrequests = AdRequest.query.all()   
-#     return render_template('admin_manage.html', user=current_user,  campaigns = campaigns, sponsors = sponsors, influencers = influencers, adrequests = adrequests)
 
 @views.route('/admin/view_sponsors',methods=['GET','POST'])
 @login_required

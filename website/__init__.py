@@ -12,11 +12,9 @@ def create_app():
     
     from .auth import auth
     from .views import views
-    from .controller import controller
     
     myapp.register_blueprint(views,url_prefix = '/')
     myapp.register_blueprint(auth,url_prefix = '/auth')
-    myapp.register_blueprint(controller,url_prefix = '/controller')
     
     with myapp.app_context():
         db.create_all()

@@ -69,6 +69,7 @@
                     <div class="col-4"></div>
                 </li>
                 {% for influencer in influencers %}
+                {% if influencer.user.flagged == 'False' %}
                     <li class="table-row">
                         <div class="col-1">{{ influencer.name }}</div>
                         <div class="col-2">{{ influencer.reach }}</div>
@@ -79,6 +80,7 @@
                             </form>
                         </div>
                     </li>
+                {% endif %}
                 {% endfor %}
             </ul>
         {% else %}
