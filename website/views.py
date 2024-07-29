@@ -491,16 +491,71 @@ def admin_dashboard():
 @views.route('/admin/view_sponsors',methods=['GET','POST'])
 @login_required
 def view_sponsors():
-    sponsor = Sponsor.query.get(id)
-    sponsor.flagged = 'True'
-    db.session.commit()
+    if request.method == 'POST':
+        name = request.form.get('name')
+        budget = request.form.get('budget')
+        industry = request.form.get('industry')
+        flagged = request.form.get('flagged')
+        
+        query = Sponsor.query
+        if name:
+            query = query.filter(Sponsor.name.ilike(f'%{name}%'))
+       
+        if budget:
+            try:
+                min, max = map(int, budget.split('-'))
+                query = query.filter(Sponsor.budget.between(min, max))
+            except ValueError:
+                flash('Invalid budget filter',category='error')
+
+        if industry and industry!='industry':
+            query = query.filter(Sponsor.industry.ilike(f'%{industry}%'))
+            
+        if flagged:
+            query = query.join(User).filter(User.flagged.ilike(f'%{flagged}%'))
+
+        sponsors = query.all()
+        return render_template('view_sponsors.html', user=current_user, sponsors = sponsors)
+
+    sponsors = Sponsor.query.all()
+    return render_template('view_sponsors.html', user=current_user, sponsors = sponsors)
     
 @views.route('/admin/view_influencers',methods=['GET','POST'])
 @login_required
 def view_influencers():
-    sponsor = Sponsor.query.get(id)
-    sponsor.flagged = 'True'
-    db.session.commit()
+    if request.method == 'POST':
+        name = request.form.get('name')
+        niche = request.form.get('niche')
+        reach = request.form.get('reach')
+        category = request.form.get('category')
+        flagged = request.form.get('flagged')
+        
+        query = Influencer.query
+        if name:
+            query = query.filter(Influencer.name.ilike(f'%{name}%'))
+       
+        if reach:
+            try:
+                min, max = map(int, reach.split('-'))
+                query = query.filter(Influencer.reach.between(min, max))
+            except ValueError:
+                flash('Invalid reach filter',category='error')
+
+        if niche and niche!='niche':
+            query = query.filter(Influencer.niche.ilike(f'%{niche}%'))
+            
+        if category and category!='category':
+            query = query.filter(Influencer.category.ilike(f'%{category}%'))
+            
+        if flagged:
+            query = query.join(User).filter(User.flagged.ilike(f'%{flagged}%'))
+
+        influencers = query.all()
+        return render_template('view_influencers.html', user=current_user, influencers = influencers)
+
+    influencers = Influencer.query.all()
+    return render_template('view_influencers.html', user=current_user, influencers=influencers)
+    
     
 @views.route('/admin/view_campaigns',methods=['GET','POST'])
 @login_required
@@ -541,16 +596,19 @@ def flag(type,id):
         campaign = Campaign.query.get(id)
         campaign.flagged = 'True'
         db.session.commit()
+        return redirect(url_for('views.view_campaigns'))
     elif type == 'influencer':
         influencer = Influencer.query.get(id)
         influencer.user.flagged = 'True'
         db.session.commit()
+        return redirect(url_for('views.view_influencers'))
     elif type == 'sponsor':
         sponsor = Sponsor.query.get(id)
         sponsor.user.flagged = 'True'
         db.session.commit()
-    return redirect(url_for('views.view_campaigns'))
-
+        return redirect(url_for('views.view_sponsors'))
+    
+    
 @views.route('/admin/unflag/<string:type>/<int:id>', methods=['POST'])
 @login_required
 def unflag(type,id):
@@ -558,14 +616,17 @@ def unflag(type,id):
         campaign = Campaign.query.get(id)
         campaign.flagged = 'False'
         db.session.commit()
+        return redirect(url_for('views.view_campaigns'))
     elif type == 'influencer':
         influencer = Influencer.query.get(id)
         influencer.user.flagged = 'False'
         db.session.commit()
+        return redirect(url_for('views.view_influencers'))
     elif type == 'sponsor':
         sponsor = Sponsor.query.get(id)
         sponsor.user.flagged = 'False'
         db.session.commit()
+        return redirect(url_for('views.view_sponsors'))
     return redirect(url_for('views.view_campaigns'))
 
 ### END ADMIN ROUTES ###

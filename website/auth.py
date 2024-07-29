@@ -29,7 +29,7 @@ def signup_sponsor():
         elif password != confirm_password:
             flash('Confirm password should match password',category='error')
         else:
-            new_user = User(email = email, password = generate_password_hash(password,method='pbkdf2:sha256'), role = 'sponsor')
+            new_user = User(email = email, password = generate_password_hash(password,method='pbkdf2:sha256'), role = 'sponsor', flagged='False')
             new_sponsor = Sponsor(name=name, industry=industry, budget=budget)
             new_sponsor.user = new_user
             db.session.add(new_user)
@@ -62,7 +62,7 @@ def signup_influencer():
         elif password != confirm_password:
             flash('Confirm password should match password',category='error')
         else:
-            new_user = User(email = email, password = generate_password_hash(password,method='pbkdf2:sha256'), role = 'influencer')
+            new_user = User(email = email, password = generate_password_hash(password,method='pbkdf2:sha256'), role = 'influencer',flagged='False')
             new_influencer = Influencer(name = name, category = category, niche = niche, reach= reach)
             new_influencer.user = new_user
             db.session.add(new_user)

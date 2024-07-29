@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}View Campaigns{% endblock %}
+{% block title %}View Sponsors{% endblock %}
 
 {% block content %}
 
@@ -8,11 +8,10 @@
 <div class="container-fluid" >
     <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
         <div>
-            <h1 class="fw-bold mb-3">Campaigns</h1>
+            <h1 class="fw-bold mb-3">Sponsors</h1>
         </div>
         <div class="ms-md-auto py-2 py-md-0">
             <a href="{{ url_for('views.admin_dashboard') }}" class="d-inline btn grey-btn">Dashboard</a>
-    
             <div class="d-inline dropdown">
                 <a class="dropdown-toggle btn grey-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 View
@@ -24,30 +23,33 @@
                 </ul>
             </div>
         </div>
-        
     </div>
     <div class="container mt-3">
-        <div class="row">
-            <div class="col-md-3">
-                <h1>Search Campaigns</h1>
-            </div>
+        <div class="row align-items-center">
+            <!-- <div class="col-md-3">
+                <h1>Search Sponsors</h1>
+            </div> -->
 
-            <div class="col-md-9">
-                  <form class="row gx-3 gy-2"  action="{{ url_for('views.view_campaigns') }}" method="post">
+            <div class="col-md-10">
+                  <form class="row gx-3 gy-2"  action="{{ url_for('views.view_sponsors') }}" method="post">
                     <div class="col-sm-3">
                         
-                        <input type="text" name="name" class="form-control" id="name" placeholder="Name">
+                        <input type="text" name="name" class="form-control" id="name">
                         <label class="form-label" for="name">Name</label>
                     </div>
                     <div class="col-sm-3">
                         
-                        <input type="date" class="form-control" id="startdate" placeholder="Start Date" name="start_date">
-                        <label class="form-label" for="startdate">Start Date</label>
+                        <input type="text" name="budget" class="form-control" id="budget" placeholder="Eg. 20000-40000">
+                        <label class="form-label" for="budget">Budget</label>
                     </div>
                     <div class="col-sm-3">
-                       
-                        <input type="date" class="form-control" id="enddate" placeholder="End Date" name="end_date">
-                        <label class="form-label" for="enddate">End Date</label>
+                        <label class="visually-hidden" for="specificSizeSelect">Industry</label>
+                        <select class="form-select" id="specificSizeSelect" name="industry">
+                            <option value="" disabled selected>Industry</option>
+                            {% for sponsor in sponsors %}
+                                <option value="{{ sponsor.industry }}">{{ sponsor.industry }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-sm-3">
                         <div class="form-check">
@@ -61,29 +63,29 @@
                         <button type="submit" class="btn btn-dark">Filter</button>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ url_for('views.view_campaigns') }}"><button type="submit" class="btn btn-secondary">Remove filter</button></a>
+                        <a href="{{ url_for('views.view_sponsors') }}"><button type="submit" class="btn btn-secondary">Remove filter</button></a>
                     </div>
                 </form>
              </div>
         </div>
         <hr>
         <br>
-        {% if campaigns %}
-            {% for campaign in campaigns %} 
+        {% if sponsors %}
+            {% for sponsor in sponsors %} 
             <div class="accordion accordion-flush" id="admin-view">
                 <div class="accordion-item">
                 <h2 class="accordion-header" id="flush-headingOne">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ campaign.id }}" aria-expanded="false" aria-controls="flush-collapseOne" {% if campaign.flagged=='True' %}id='flagged'{% endif %}>
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ sponsor.id }}" aria-expanded="false" aria-controls="flush-collapseOne" {% if sponsor.user.flagged=='True' %}id='flagged'{% endif %}>
                         <div class="container">
                             <div class="row">
                                 <div class="col-4">
-                                    <strong><em>{{ campaign.name }}</em></strong>
+                                    <strong><em>{{ sponsor.name }}</em></strong>
                                 </div>
                                 <div class="col-4">
-                                  <strong>Started:</strong> {{ campaign.start_date.strftime('%d/%m/%Y') }}
+                                  <strong>Industry:</strong> {{ sponsor.industry }}
                                 </div>
                                 <div class="col-4">
-                                  <strong>Ending:</strong> {{ campaign.end_date.strftime('%d/%m/%Y') }}
+                                  <strong>Budget:</strong> {{ sponsor.budget }}
                                 </div>
                             </div>
                         </div>
@@ -91,28 +93,18 @@
                     </button>
                 </h2>
                 
-                <div id="{{ campaign.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne">
+                <div id="{{ sponsor.id }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne">
                     <div class="accordion-body">
-                        <strong>Sponsor:</strong> {{ campaign.sponsor.name }}
-                        <div class="row">
-                            <div class="col">
-                                <strong>Description:</strong> {{ campaign.description }}
-                            </div>
-                        </div>
-                        <br>
-                        <div class="row">
-                            {% for adrequest in campaign.ad_requests %}
+                        <strong>All Campaigns:</strong>
+                        
+                        <div class="row mt-3">
+                            {% for camp in sponsor.campaigns %}
                                 <div class="col-3 me-3">
-                                    <div class="card text-white bg-dark mb-3">
+                                    <div class="card text-white bg-dark mb-3 {% if camp.flagged=='True' %}border-danger border-5{% endif %}">
                                         <div class="card-body">
-                                            <h5 class="card-title">{{ adrequest.requirements }}</h5>
-                                            <p class="card-text"><strong>Amount:</strong> Rs. {{ adrequest.payment_amount }}</p>
-                                            {% if adrequest.influencer_id %}
-                                            <p class="card-text"><strong>Influencer:</strong>{{ adrequest.influencer.name }} </p>
-                                            {% else %}
-                                            <p class="card-text"><strong>Influencer:</strong> Not Assigned
-                                            {% endif %}
-                                            
+                                            <h5 class="card-title">{{ camp.name }}</h5>
+                                            <p class="card-text">{{ camp.description }}</p>
+                                            <p class="card-text">{{ camp.ad_requests | length }} Ad Requests</p>
                                         </div>
                                     </div>
                                 </div>
@@ -122,15 +114,15 @@
 
                         
                         <div class="row justify-content-center">
-                            {% if campaign.flagged != 'True' %}
+                            {% if sponsor.user.flagged != 'True' %}
                                 <div class="col-2">
-                                    <form action="{{ url_for('views.flag',type='campaign',id=campaign.id) }}" method="POST">
-                                        <button type="submit" class="btn btn-danger">Flag Campaign</button>
+                                    <form action="{{ url_for('views.flag',type='sponsor',id=sponsor.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Flag Sponsor</button>
                                     </form>
                                 </div>
                             {% else %}
                                 <div class="col-2">
-                                    <form action="{{ url_for('views.unflag',type='campaign',id=campaign.id) }}" method="POST">
+                                    <form action="{{ url_for('views.unflag',type='sponsor',id=sponsor.id) }}" method="POST">
                                         <button type="submit" class="btn btn-info">Undo Flag</button>
                                     </form>
                                 </div>
@@ -144,10 +136,12 @@
             <br>
             {% endfor %}
         {% else %}
-            <h4><em>No Campaigns Found</em></h4>
+            <h4><em>No Sponsors</em></h4>
         {% endif %}
 
 
     </div>
+
 </div>
+
 {% endblock %}
