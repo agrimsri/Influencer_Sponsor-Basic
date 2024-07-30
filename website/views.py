@@ -12,10 +12,6 @@ views = Blueprint('views', __name__)
 def home():
     return render_template('home.html', user = current_user)
 
-# @views.route('api/sponsor/dashboard')
-# @login_required
-# def dashboard():
-#     sponsor = Sponsor.query.get(current_user.id)
 
 ### SPONSOR ROUTES ###
 @views.route('sponsor/dashboard')
@@ -75,27 +71,60 @@ def sponsor_campaigns():
             
     return render_template('campaigns.html', user=current_user, noflag_campaigns=noflag_campaigns, flag_campaigns=flag_campaigns)
 
-@views.route('create_campaign', methods=['POST'])
+@views.route('/sponsor/campaign/add', methods=['POST'])
 def create_campaign():
-    if request.method == 'POST':
-        name = request.form['name']
-        description = request.form.get('description')
-        startDate_str = request.form.get('startDate')
-        endDate_str = request.form.get('endDate')
-        budget = request.form.get('budget')
-        visibility = request.form.get('visibility')
-        
-        start_date = datetime.strptime(startDate_str, '%Y-%m-%d').date()
-        end_date = datetime.strptime(endDate_str, '%Y-%m-%d').date()
-        
-        new_campaign = Campaign(name=name, description=description, start_date=start_date, end_date=end_date, budget=budget, visibility=visibility,flagged='False', sponsor_id=current_user.id)
-        db.session.add(new_campaign)
-        db.session.commit()
-
-        flash('Campaign created successfully', category='success')
-        return redirect(url_for('views.sponsor_campaigns'))
+    name = request.form['name']
+    description = request.form.get('description')
+    startDate_str = request.form.get('startDate')
+    endDate_str = request.form.get('endDate')
+    budget = request.form.get('budget')
+    visibility = request.form.get('visibility')
     
-@views.route('/campaign/<int:campaign_id>', methods=['GET','POST'])
+    start_date = datetime.strptime(startDate_str, '%Y-%m-%d').date()
+    end_date = datetime.strptime(endDate_str, '%Y-%m-%d').date()
+    
+    new_campaign = Campaign(name=name, description=description, start_date=start_date, end_date=end_date, budget=budget, visibility=visibility,flagged='False', sponsor_id=current_user.id)
+    db.session.add(new_campaign)
+    db.session.commit()
+
+    flash('Campaign created successfully', category='success')
+    return redirect('/sponsor/campaigns')
+    
+@views.route('/sponsor/campaign/delete/<int:campaign_id>', methods=['POST'])
+def delete_campaign(campaign_id):
+    campaign = Campaign.query.get_or_404(campaign_id)
+    ad_requests = AdRequest.query.filter_by(campaign_id=campaign_id).all()
+    for ad_request in ad_requests:
+        negotiations = Negotiation.query.filter_by(ad_request_id=ad_request.id).all()
+        for negotiation in negotiations:
+            db.session.delete(negotiation)
+        db.session.delete(ad_request)
+
+    db.session.delete(campaign)
+    db.session.commit()
+    flash('Campaign deleted', category='success')
+    return redirect('/sponsor/campaigns')
+
+@views.route('/sponsor/campaign/update/<int:campaign_id>', methods=['POST'])
+def update_campaign(campaign_id):
+    campaign = Campaign.query.get_or_404(campaign_id)
+    
+    start_date_str = request.form.get('start_date',campaign.start_date)
+    end_date_str = request.form.get('end_date', campaign.end_date)
+    
+    campaign.name = request.form.get('name')
+    campaign.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+    campaign.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    campaign.budget = float(request.form.get('budget'))
+    campaign.visibility = request.form.get('visibility')
+    campaign.description = request.form.get('description',campaign.description)
+
+    db.session.commit()
+    print('updated')
+    flash('Campaign Updated', category='success')
+    return redirect(f'/sponsor/campaign/details/{campaign_id}')
+    
+@views.route('/sponsor/campaign/details/<int:campaign_id>')
 @login_required
 def campaign_details(campaign_id):
     # Deleting previous negotiation if any
@@ -108,39 +137,6 @@ def campaign_details(campaign_id):
     db.session.commit()
     
     campaign = Campaign.query.filter_by(id=campaign_id).first()
-    if request.method == 'POST':
-        if request.form['action'] == 'update':
-            start_date_str = request.form.get('start_date',campaign.start_date)
-            end_date_str = request.form.get('end_date', campaign.end_date)
-            
-            campaign.name = request.form.get('name')
-            campaign.start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-            campaign.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-            campaign.budget = float(request.form.get('budget'))
-            campaign.visibility = request.form.get('visibility')
-            campaign.description = request.form.get('description',campaign.description)
-
-            db.session.commit()
-            
-            flash('Profile Updated', category='success')
-            return redirect(url_for('views.campaign_details', campaign_id=campaign.id))
-        
-        elif request.form['action'] == 'delete':
-            campaign = Campaign.query.get(campaign_id)
-            ad_requests = AdRequest.query.filter_by(campaign_id=campaign_id).all()
-            for ad_request in ad_requests:
-                negotiations = Negotiation.query.filter_by(ad_request_id=ad_request.id).all()
-                for negotiation in negotiations:
-                    db.session.delete(negotiation)
-                db.session.delete(ad_request)
-
-            db.session.delete(campaign)
-            db.session.commit()
-        
-            flash('Campaign deleted successfully',category='success')
-            return redirect(url_for('views.sponsor_campaigns'))
-    
-       
     return render_template('campaign_details.html', user=current_user, campaign=campaign)
 
 @views.route('sponsor/stats')

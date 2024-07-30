@@ -33,7 +33,7 @@
     <div class="container mt-3">
         <h1>Campaign Details</h1>
         <br>
-        <form action="{{ url_for('views.campaign_details', campaign_id=campaign.id) }}" class="profile" method="post">
+        <form action="/sponsor/campaign/update/{{campaign.id}}" class="profile" method="POST">
             <div class="campaign-form">
             <div class="input-group mb-3 input-group-lg">
                 <span class="input-group-text">Name</span>
@@ -62,7 +62,6 @@
                         <option value="Private" selected>Private</option>
                     {% endif %}
                 </select>
-                <!-- <input type="text" class="form-control" name="visibility" value="{{ campaign.visibility }}" placeholder="{{ campaign.visibility }}"> -->
             </div>
             <div class="input-group mb-3 input-group-lg">
                 <span class="input-group-text">Description</span>
@@ -70,10 +69,10 @@
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <button type="submit" class="grey-btn" name="action" value="update">Update</button>
+                    <button type="submit" class="grey-btn">Update</button>
                 </div>
                 <div class="col-md-6 text-right">
-                    <button type="submit" class="red-btn" name="action" value="delete">Delete</button>
+                    <button type="button" class="red-btn" data-bs-toggle="modal" data-bs-target="#deleteCampaign">Delete</button>
                 </div>
             </div>
             </div>
@@ -81,6 +80,24 @@
         </form>
     </div>
 </div>
+
+<!-- Campaign deletion modal -->
+ <form action="/sponsor/campaign/delete/{{campaign.id}}", method="POST">
+  <div class="modal fade" id="deleteCampaign" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+        <strong>{{campaign.name}}</strong> will be deleted.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<!---------------------------->
 
 <div class="container mt-3">
     <hr>

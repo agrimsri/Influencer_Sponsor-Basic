@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from .models import db,User
+from .api_controller import api
 
 def create_app():
     myapp = Flask(__name__)
@@ -9,6 +10,7 @@ def create_app():
     
     myapp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite3'
     db.init_app(myapp)
+    api.init_app(myapp)
     
     from .auth import auth
     from .views import views
