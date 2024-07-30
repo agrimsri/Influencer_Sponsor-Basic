@@ -37,7 +37,7 @@
             {% if influencer.ad_requests %}
             <div class="row row-cols-1 row-cols-md-4 g-3">
                 {% for adrequest in influencer.ad_requests %}
-                {% if adrequest.campaign.end_date < today_date %}
+                {% if adrequest.campaign.end_date > today_date %}
                     <div class="col">
                         <div class="card text-white bg-dark mb-3" >
                             <div class="card-header">{{ adrequest.campaign.name }}</div>
