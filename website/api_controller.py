@@ -22,7 +22,17 @@ class CampaignAPI(Resource):
         if campaign is None:
             return jsonify({'message': 'Campaign not found'}), 404
         else:
-            return jsonify(campaign.to_dict())
+            return jsonify( {
+            'id': campaign.id,
+            'name': campaign.name,
+            'description': campaign.description,
+            'start_date': campaign.start_date.strftime('%Y-%m-%d'),
+            'end_date': campaign.end_date.strftime('%Y-%m-%d'),
+            'budget': campaign.budget,
+            'visibility': campaign.visibility,
+            'flagged': campaign.flagged,
+            'sponsor_id': campaign.sponsor_id
+        })
         
             
     def post(self,sponsor_id):
@@ -42,7 +52,7 @@ class CampaignAPI(Resource):
         db.session.add(new_campaign)
         db.session.commit()
 
-        return jsonify({'message': 'Campaign created successfully'}), 201
+        return jsonify({'message': 'Campaign created successfully'})
 
     def put(self, campaign_id):
         campaign = Campaign.query.get_or_404(campaign_id)
@@ -57,8 +67,8 @@ class CampaignAPI(Resource):
         campaign.flagged = "False" 
         
         db.session.commit()
-
-        return jsonify({'message': 'Campaign updated successfully!'}), 200
+        return jsonify({'message': 'Campaign updated successfully!'})
+        
 
     def delete(self, campaign_id):
         campaign = Campaign.query.get_or_404(campaign_id)
@@ -72,7 +82,7 @@ class CampaignAPI(Resource):
         db.session.delete(campaign)
         db.session.commit()
 
-        return jsonify({'message': 'Campaign deleted successfully!'}), 200
+        return jsonify({'message': 'Campaign deleted successfully!'})
 
 
 user_parser = reqparse.RequestParser()
@@ -227,7 +237,7 @@ class InfluencerResource(Resource):
 
 
 # Register API resources
-api.add_resource(CampaignAPI, '/api/campaigns/<int:campaign_id>', '/api/campaigns/update/<int:campaign_id>', '/api/campaigns/create/<int:sponsor_id>','/api/campaigns/delete/<int:campaign_id>')
+api.add_resource(CampaignAPI, '/api/campaigns/<int:campaign_id>', '/api/campaigns', '/api/campaigns/sponsor/<int:sponsor_id>')
 api.add_resource(UserResource, '/api/users', '/api/users/<int:user_id>')
 api.add_resource(SponsorResource, '/api/sponsors', '/api/sponsors/<int:sponsor_id>')
 api.add_resource(InfluencerResource, '/api/influencers', '/api/influencers/<int:influencer_id>')
