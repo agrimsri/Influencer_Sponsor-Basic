@@ -1,7 +1,6 @@
-from flask import request,jsonify
+from flask import jsonify
 from flask_restful import Resource,Api,reqparse
 from .models import *
-from flask_login import current_user
 from werkzeug.security import generate_password_hash
 
 api = Api()

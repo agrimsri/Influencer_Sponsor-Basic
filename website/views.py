@@ -302,10 +302,13 @@ def influencer_profile():
     influencer = Influencer.query.get(current_user.id)
     if request.method == 'POST':
         flag = True
-        influencer.name = request.form['name']
-        influencer.category = request.form['category']
-        influencer.niche = request.form['niche']
-        influencer.reach = int(request.form['reach'])
+        influencer = Influencer.query.get(current_user.id)
+        
+        influencer.name = request.form.get('name',influencer.name)
+        influencer.category = request.form.get('category', influencer.category)
+        influencer.niche = request.form.get('niche', influencer.niche)
+        influencer.reach = int(request.form.get('reach', influencer.reach))
+        
         
         current_password = request.form.get('current_password')
         if current_password != "":
@@ -317,6 +320,7 @@ def influencer_profile():
                 flash('Incorrect password', category='error')
                 flag = False
         if flag:
+            db.session.commit()
             flash('Profile Updated', category='success')
             return render_template('influencer_profile.html', user = current_user, influencer=influencer)
     return render_template('influencer_profile.html', influencer=influencer, user = current_user)

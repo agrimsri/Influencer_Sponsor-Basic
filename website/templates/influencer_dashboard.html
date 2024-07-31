@@ -45,9 +45,11 @@
             <br>
             <h2>Notifications</h2>
             {% if negotiations %}
+            {% set ns = namespace(found=false) %}
                 <ul class="notification-display">
                     {% for nego in negotiations %}
-                    {% if nego.message != 'influencer_new' %}
+                    {% if nego.message not in ['influencer_new','influencer_negotiated'] %}
+                    {% set ns.found = true %}
                         <li class="row" >
                             
                             {% if nego.message == 'sponsor_new' %}
@@ -63,17 +65,11 @@
                     {% endif %}
                     {% endfor %}
                 </ul>
-            <!-- {% elif negotiated_request %}
-                <ul class="campaign-display"></ul>
-                    {% for adrequest in negotiated_requests %}
-                        <li class="row" style="background-color: #d35068">
-                            <div class="col">New amount negotiated for {{ adrequest.campaign.name }}</div>
-                            <div class="col"><button class="btn btn-secondary">View</button></div>
-                        </li>
-                    {% endfor %}
-                </ul> -->
             {% else %}
                 <p><em>No notifications</em></p>
+            {% endif %}
+            {% if not ns.found %}
+            <p><em>No notifications</em></p>
             {% endif %}
         </div>
     </div>
